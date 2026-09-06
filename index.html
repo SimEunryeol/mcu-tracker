@@ -23,9 +23,26 @@
     --muted:#6B7280;
     --hair:#DFE2E8;
     --done:#9AA1AC;
+    --line:#EEF0F3; --boxb:#C4C9D2;
     --c1:#E1006E; --c2:#F5A300; --c3:#0090D4; --c4:#7A4FBF;
     --c5:#C8102E; --c6:#0F8A5F; --c7:#1B2A6B; --c8:#FF4D00;
     --c9:#0B7285; --c10:#B5179E; --c11:#D62828; --c12:#2B2D42; --c13:#58616E;
+  }
+
+  /* ── 다크 ── 뷰어가 시스템 설정이면 표식이 없으므로 미디어 쿼리로, 직접 고르면 data-theme으로 ── */
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --paper:#12141A; --panel:#191C23; --ink:#E8EAEE; --muted:#99A1AD;
+      --hair:#2A2F39; --done:#69717E; --line:#242832; --boxb:#3C424E;
+      --c4:#9B77E0; --c5:#E8455C; --c6:#22B47E; --c7:#5B72D8;
+      --c9:#17A2B8; --c11:#F05555; --c12:#8189C4; --c13:#8A94A3;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12141A; --panel:#191C23; --ink:#E8EAEE; --muted:#99A1AD;
+    --hair:#2A2F39; --done:#69717E; --line:#242832; --boxb:#3C424E;
+    --c4:#9B77E0; --c5:#E8455C; --c6:#22B47E; --c7:#5B72D8;
+    --c9:#17A2B8; --c11:#F05555; --c12:#8189C4; --c13:#8A94A3;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html{-webkit-text-size-adjust:100%}
@@ -41,7 +58,7 @@
   /* ── 헤더 ── */
   header{
     position:sticky;top:0;z-index:20;
-    background:rgba(242,243,246,.93);
+    background:color-mix(in srgb, var(--paper) 93%, transparent);
     backdrop-filter:saturate(1.4) blur(12px);
     border-bottom:1px solid var(--hair);
   }
@@ -98,10 +115,10 @@
   li.on .node{background:var(--sc);border-color:var(--sc);transform:scale(1.15)}
 
   label.row{display:flex;align-items:center;gap:10px;flex:1;padding:11px 0;cursor:pointer;min-height:46px}
-  li+li label.row{border-top:1px solid #EEF0F3}
+  li+li label.row{border-top:1px solid var(--line)}
   input{position:absolute;opacity:0;width:0;height:0}
-  .box{width:20px;height:20px;flex:none;border:2px solid #C4C9D2;border-radius:5px;
-    display:grid;place-items:center;transition:.15s;background:#fff}
+  .box{width:20px;height:20px;flex:none;border:2px solid var(--boxb);border-radius:5px;
+    display:grid;place-items:center;transition:.15s;background:var(--panel)}
   .box svg{width:12px;height:12px;stroke:#fff;stroke-width:3.5;fill:none;
     stroke-linecap:round;stroke-linejoin:round;opacity:0;transform:scale(.5);transition:.15s}
   li.on .box{background:var(--sc);border-color:var(--sc)}
@@ -111,7 +128,7 @@
   li.on .name{color:var(--done);text-decoration:line-through;text-decoration-color:#C9CDD4}
   .meta{display:flex;gap:6px;align-items:center;margin-top:2px;font-family:'IBM Plex Mono',monospace;
     font-size:10.5px;color:var(--muted);letter-spacing:.02em}
-  .kind{padding:1px 5px;border-radius:3px;background:#EEF0F3;font-weight:600}
+  .kind{padding:1px 5px;border-radius:3px;background:var(--line);font-weight:600}
   .core{color:var(--c5);font-weight:600}
   .soon{color:var(--sc);font-weight:600;border:1px solid currentColor;border-radius:3px;padding:0 4px}
 
