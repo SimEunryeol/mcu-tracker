@@ -78,7 +78,10 @@
     transition:width .5s cubic-bezier(.22,1,.36,1)}
 
   .next{display:flex;gap:8px;align-items:center;padding:9px 0 12px;font-size:13px;color:var(--muted);min-height:38px}
-  .next em{font-style:normal;font-weight:600;color:var(--ink)}
+  .next em{font-style:normal;font-weight:600;color:var(--ink);min-width:0;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .next .via{margin-left:auto;flex:none;font-family:'IBM Plex Mono',monospace;font-size:11px;
+    font-weight:600;color:var(--c14)}
   .next .tag{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;
     letter-spacing:.08em;padding:2px 6px;border:1px solid var(--ink);border-radius:3px;flex:none}
 
@@ -225,7 +228,7 @@ const DATA=[
      ["가디언즈 오브 갤럭시 홀리데이 스페셜","스페셜",44,0],
      ["블랙 팬서: 와칸다 포에버","영화",161,1],
      ["아이언하트","드라마",270,0]]},
- {n:"10",t:"2026",c:"--c10",note:"양자 영역과 신성한 시간선이 동시에 흔들린다. 「데드풀과 울버린」은 14번 섹션의 데드풀 1·2와 로건을 먼저 보면 훨씬 잘 붙습니다",
+ {n:"10",t:"2026",c:"--c10",note:"양자 영역과 신성한 시간선이 동시에 흔들린다. 「데드풀과 울버린」 전에 14번 엑스맨을 개봉순으로 보고 오세요. 상단 '다음'이 순서대로 안내합니다",
   i:[["앤트맨과 와스프: 퀀텀매니아","영화",125,1],
      ["가디언즈 오브 갤럭시 Vol.3","영화",150,1],
      ["시크릿 인베이젼","드라마",300,0],
@@ -256,21 +259,21 @@ const DATA=[
      ["런어웨이즈 시즌1","드라마",480,0],["런어웨이즈 시즌2","드라마",585,0],
      ["런어웨이즈 시즌3","드라마",450,0],
      ["클록 앤 대거 시즌1","드라마",450,0],["클록 앤 대거 시즌2","드라마",450,0]]},
- {n:"14",t:"엑스맨 · 1845 ~ 2029",c:"--c14",x:1,
-  note:"폭스가 만든 별개 세계관(지구-10005). 「데이즈 오브 퓨처 패스트」의 1973년에서 시간선이 갈라져, 그 뒤 목록은 바뀌기 전 세계의 이야기입니다",
-  i:[["엑스맨 탄생: 울버린","영화",107,0],
-     ["엑스맨: 퍼스트 클래스","영화",132,1],
-     ["엑스맨: 데이즈 오브 퓨처 패스트","영화",132,1],
-     ["엑스맨: 아포칼립스","영화",144,0],
-     ["다크 피닉스","영화",114,0],
-     ["엑스맨","영화",104,1],
+ {n:"14",t:"엑스맨 · 개봉순",c:"--c14",x:1,
+  note:"지구-10005의 별개 세계관. 「데이즈 오브 퓨처 패스트」가 과거를 바꾸는 이야기라 시대순으로 보면 결말을 먼저 보게 되어 개봉순으로 묶었습니다. '배경'은 작품 속 연도이고, 표시가 없으면 개봉 당시가 배경입니다",
+  i:[["엑스맨","영화",104,1],
      ["엑스맨 2","영화",134,1],
      ["엑스맨: 최후의 전쟁","영화",104,0],
+     ["엑스맨 탄생: 울버린","영화",107,0,null,"1970년대"],
+     ["엑스맨: 퍼스트 클래스","영화",132,1,null,"1962"],
      ["더 울버린","영화",126,0],
+     ["엑스맨: 데이즈 오브 퓨처 패스트","영화",132,1,null,"1973·2023"],
      ["데드풀","영화",108,1],
+     ["엑스맨: 아포칼립스","영화",144,0,null,"1983"],
+     ["로건","영화",137,1,null,"2029"],
      ["데드풀 2","영화",119,1],
-     ["뉴 뮤턴트","영화",94,0],
-     ["로건","영화",137,1]]},
+     ["다크 피닉스","영화",114,0,null,"1992"],
+     ["뉴 뮤턴트","영화",94,0]]},
  {n:"15",t:"엑스맨 별계 드라마",c:"--c15",x:1,
   note:"영화와도 서로와도 연속성이 이어지지 않습니다. 독립된 이야기로 보세요",
   i:[["리전 시즌1","드라마",440,0],["리전 시즌2","드라마",550,0],
@@ -286,6 +289,8 @@ const DATA=[
 ];
 
 const KEY='mcu:watched:v2', OLDKEY='mcu:watched:v1';
+/* 경유: 이 작품 차례가 오면 지정 섹션의 안 본 작품을 먼저 안내한다 */
+const VIA={'데드풀과 울버린':{sec:'14',label:'엑스맨 경유'}};
 let done=new Set(), filter='all', mode='mem';
 const $=s=>document.querySelector(s);
 const list=$('#list');
@@ -321,6 +326,11 @@ function migrate(arr){
   const t=arr.map(v=>String(v).replace(/^[^|]*\|/,'')).map(v=>RENAMED[v]||v);
   return [...new Set(t)].filter(v=>titles.has(v));
 }
+function detour(name){
+  const v=VIA[name], sec=v&&DATA.find(s=>s.n===v.sec); if(!sec)return null;
+  const k=sec.i.findIndex(it=>!done.has(it[0])); if(k<0)return null;
+  return [sec.i[k][0], sec.i[k][1], `${v.label} ${k+1}/${sec.i.length}`];
+}
 function hrs(m){const h=Math.round(m/60);return h>=1?h+'시간':m+'분'}
 function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');
   clearTimeout(t._x);t._x=setTimeout(()=>t.classList.remove('show'),1800)}
@@ -344,11 +354,11 @@ function render(){
   let html='';
   DATA.forEach(sec=>{
     let rows='',sAll=0,sDn=0;
-    sec.i.forEach(([name,kind,mins,core,tag])=>{
+    sec.i.forEach(([name,kind,mins,core,tag,era])=>{
       const id=name, on=done.has(id);
       sAll++; if(on)sDn++;
       if(sec.x){ xAll++; if(on)xDn++; }
-      else{ all++; if(on)dn++; else{left+=mins; if(!next)next=[name,kind]} }
+      else{ all++; if(on)dn++; else{left+=mins; if(!next)next=detour(name)||[name,kind]} }
       if(filter==='todo'&&on)return;
       if(filter==='core'&&!core)return;
       rows+=`<li class="${on?'on':''}"><div class="rail"><div class="node"></div></div>
@@ -356,6 +366,7 @@ function render(){
         <span class="box"><svg viewBox="0 0 14 14"><polyline points="2,7.5 5.5,11 12,3.5"/></svg></span>
         <span class="txt"><span class="name">${name}</span>
         <span class="meta"><span class="kind">${kind}</span><span>${hrs(mins)}</span>
+        ${era?`<span>배경 ${era}</span>`:''}
         ${core?'<span class="core">핵심</span>':''}
         ${tag?`<span class="soon">${tag}</span>`:''}</span></span></label></li>`;
     });
@@ -372,7 +383,7 @@ function render(){
   $('#xnote').textContent = xAll
     ? `별책 ${xDn}/${xAll}편은 위 진행률에 포함되지 않습니다.` : '';
   $('#next').innerHTML = next
-    ? `<span class="tag">다음</span><em>${next[0]}</em>`
+    ? `<span class="tag">다음</span><em>${next[0]}</em>${next[2]?`<span class="via">${next[2]}</span>`:''}`
     : (dn?`<span class="tag">완주</span><em>전부 보셨습니다. 이제 둠스데이만 남았습니다</em>`
         :`<span class="tag">시작</span><em>캡틴 아메리카: 퍼스트 어벤져부터 출발</em>`);
 }
