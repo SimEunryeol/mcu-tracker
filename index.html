@@ -228,7 +228,7 @@ const DATA=[
      ["가디언즈 오브 갤럭시 홀리데이 스페셜","스페셜",44,0],
      ["블랙 팬서: 와칸다 포에버","영화",161,1],
      ["아이언하트","드라마",270,0]]},
- {n:"10",t:"2026",c:"--c10",note:"양자 영역과 신성한 시간선이 동시에 흔들린다. 「데드풀과 울버린」 전에 14번 엑스맨을 보고 오세요. 상단 '다음'이 순서대로 안내합니다",
+ {n:"10",t:"2026",c:"--c10",note:"양자 영역과 신성한 시간선이 동시에 흔들린다. 「데드풀과 울버린」 전에 14번 엑스맨과 16번의 판타스틱 4 (2005·2007)를 보고 오세요. 상단 '다음'이 순서대로 안내합니다",
   i:[["앤트맨과 와스프: 퀀텀매니아","영화",125,1],
      ["가디언즈 오브 갤럭시 Vol.3","영화",150,1],
      ["시크릿 인베이젼","드라마",300,0],
@@ -244,7 +244,7 @@ const DATA=[
      ["원더맨","드라마",240,0],
      ["데어데블: 본 어게인 시즌2","드라마",400,0],
      ["퍼니셔: 원 라스트 킬","스페셜",50,0],
-     ["비전퀘스트","드라마",320,1,"예정"],
+     ["비전퀘스트","드라마",320,1],
      ["스파이더맨: 브랜드 뉴 데이","영화",120,1]]},
  {n:"12",t:"다른 지구 · 1960년대",c:"--c12",
   note:"지구-828의 이야기. 엔딩에서 본편 시간선과 합류하며 「어벤져스: 둠스데이」(12월 개봉)로 직결됩니다",
@@ -280,7 +280,7 @@ const DATA=[
      ["리전 시즌3","드라마",384,0],
      ["더 기프티드 시즌1","드라마",559,0],["더 기프티드 시즌2","드라마",688,0]]},
  {n:"16",t:"그 밖의 폭스 마블",c:"--c16",x:1,
-  note:"디즈니+에 있는 옛 폭스 마블 영화. 어느 시간선과도 이어지지 않습니다",
+  note:"디즈니+에 있는 옛 폭스 마블 영화. 판타스틱 4 (2005)·실버 서퍼의 위협은 「데드풀과 울버린」의 카메오로 이어져 경유 안내에 넣었습니다",
   i:[["판타스틱 4 (2005)","영화",106,0],
      ["판타스틱 4: 실버 서퍼의 위협","영화",92,0],
      ["판타스틱 포 (2015)","영화",100,0],
@@ -289,8 +289,11 @@ const DATA=[
 ];
 
 const KEY='mcu:watched:v2', OLDKEY='mcu:watched:v1';
-/* 경유: 이 작품 차례가 오면 지정 섹션의 안 본 작품을 먼저 안내한다 */
-const VIA={'데드풀과 울버린':{sec:'14',label:'엑스맨 경유'}};
+/* 경유: 이 작품 차례가 오면 아래 단계를 순서대로 먼저 안내한다 (only가 없으면 섹션 전체) */
+const VIA={'데드풀과 울버린':[
+  {sec:'14',label:'엑스맨 경유'},
+  {sec:'16',label:'판타스틱 4 경유',only:['판타스틱 4 (2005)','판타스틱 4: 실버 서퍼의 위협']}
+]};
 let done=new Set(), filter='all', mode='mem';
 const $=s=>document.querySelector(s);
 const list=$('#list');
@@ -327,9 +330,13 @@ function migrate(arr){
   return [...new Set(t)].filter(v=>titles.has(v));
 }
 function detour(name){
-  const v=VIA[name], sec=v&&DATA.find(s=>s.n===v.sec); if(!sec)return null;
-  const k=sec.i.findIndex(it=>!done.has(it[0])); if(k<0)return null;
-  return [sec.i[k][0], sec.i[k][1], `${v.label} ${k+1}/${sec.i.length}`];
+  for(const v of VIA[name]||[]){
+    const sec=DATA.find(s=>s.n===v.sec); if(!sec)continue;
+    const items=v.only?sec.i.filter(it=>v.only.includes(it[0])):sec.i;
+    const k=items.findIndex(it=>!done.has(it[0]));
+    if(k>=0)return [items[k][0], items[k][1], `${v.label} ${k+1}/${items.length}`, sec.c];
+  }
+  return null;
 }
 function hrs(m){const h=Math.round(m/60);return h>=1?h+'시간':m+'분'}
 function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');
@@ -383,7 +390,7 @@ function render(){
   $('#xnote').textContent = xAll
     ? `별책 ${xDn}/${xAll}편은 위 진행률에 포함되지 않습니다.` : '';
   $('#next').innerHTML = next
-    ? `<span class="tag">다음</span><em>${next[0]}</em>${next[2]?`<span class="via">${next[2]}</span>`:''}`
+    ? `<span class="tag">다음</span><em>${next[0]}</em>${next[2]?`<span class="via" style="color:var(${next[3]})">${next[2]}</span>`:''}`
     : (dn?`<span class="tag">완주</span><em>전부 보셨습니다. 이제 둠스데이만 남았습니다</em>`
         :`<span class="tag">시작</span><em>캡틴 아메리카: 퍼스트 어벤져부터 출발</em>`);
 }
